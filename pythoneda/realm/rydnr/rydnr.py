@@ -24,8 +24,8 @@ from pythoneda.event import Event
 from pythoneda.event_emitter import EventEmitter
 from pythoneda.event_listener import EventListener
 from pythoneda.ports import Ports
-from pythoneda.realm.rydnr.events.commit_change_delegated import CommitChangeDelegated
-from pythoneda.shared.artifact_changes.events.commit_change_requested import CommitChangeRequested
+from pythoneda.realm.rydnr.events.commit_staged_changes_request_delegated import CommitStagedChangesRequestDelegated
+from pythoneda.shared.artifact_changes.events.commit_staged_changes_requested import CommitStagedChangesRequested
 from pythoneda.shared.git.git_repo import GitRepo
 from typing import List, Type
 
@@ -69,17 +69,21 @@ class Rydnr(EventListener):
         :return: Such list.
         :rtype: List
         """
-        return [ CommitChangeDelegated ]
+        return [ CommitStagedChangesRequestDelegated ]
 
     @classmethod
-    async def listen_CommitChangeDelegated(cls, event: CommitChangeDelegated):
+    async def listen_CommitStagedChangesRequestDelegated(cls, event: CommitStagedChangesRequestDelegated) -> CommitStagedChangesRequested:
         """
         Gets notified of a CommitChangeDelegated event.
-        Emits a CommitChangeRequested event.
+        Emits a CommitStagedChangesRequested event.
         :param event: The event.
-        :type event: pythoneda.shared.artifact_changes.events.commit_change_requested.CommitChangeRequested
+        :type event: pythoneda.realm.rydnr.events.commit_staged_changes_delegated.CommitStagedChangesDelegated
+        :return: A request to commit staged changes.
+        :rtype: pythoneda.shared.artifact_changes.events.commit_staged_changes_requested.CommitStagedChangesRequested
         """
         event_emitter = Ports.instance().resolve(EventEmitter)
         repository_url = GitRepo.remote_urls(event.repository_folder)['origin'][0]
         branch = GitRepo.current_branch(event.repository_folder)
-        await event_emitter.emit(CommitChangeRequested(repository_url, branch, event.id))
+        result = CommitStagedChangesRequested(repository_url, branch, event.id)
+        await event_emitter.emit(result)
+        return result
