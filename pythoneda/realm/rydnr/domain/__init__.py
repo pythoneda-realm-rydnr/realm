@@ -1,7 +1,7 @@
 """
-pythoneda/realm/rydnr/__init__.py
+pythoneda/realm/rydnr/domain/__init__.py
 
-This file ensures pythoneda.realm.rydnr is a namespace.
+This file ensures pythoneda.realm.rydnr.domain is a package.
 
 Copyright (C) 2023-today rydnr's pythoneda-realm-rydnr/realm
 
@@ -18,4 +18,3 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-__path__ = __import__("pkgutil").extend_path(__path__, __name__)

@@ -1,5 +1,5 @@
 """
-pythoneda/realm/rydnr/rydnr.py
+pythoneda/realm/rydnr/domain/rydnr.py
 
 This file declares the Rydnr class.
 
