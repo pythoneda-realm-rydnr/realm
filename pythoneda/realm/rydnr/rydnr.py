@@ -19,14 +19,11 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import logging
-from pythoneda.value_object import attribute, sensitive
-from pythoneda.event import Event
-from pythoneda.event_emitter import EventEmitter
-from pythoneda.event_listener import EventListener
-from pythoneda.ports import Ports
-from pythoneda.realm.rydnr.events.staged_changes_commit_request_delegated import StagedChangesCommitRequestDelegated
-from pythoneda.shared.artifact_changes.events.staged_changes_commit_requested import StagedChangesCommitRequested
-from pythoneda.shared.git.git_repo import GitRepo
+from pythoneda import attribute, sensitive, Event, EventEmitter, EventListener, Ports
+from pythoneda.realm.rydnr.events import ChangeStagingCodeRequestDelegated
+from pythoneda.shared.artifact_changes import Change
+from pythoneda.shared.artifact_changes.events import ChangeStagingCodeRequested
+from pythoneda.shared.git import GitDiff, GitRepo
 from typing import List, Type
 
 class Rydnr(EventListener):
@@ -55,7 +52,7 @@ class Rydnr(EventListener):
         """
         Retrieves the singleton instance.
         :return: Such instance.
-        :rtype: PythonEDA
+        :rtype: pythoneda.realm.rydnr.domain.rydnr.Rydnr
         """
         if cls._singleton is None:
             cls._singleton = cls.initialize()
@@ -69,21 +66,25 @@ class Rydnr(EventListener):
         :return: Such list.
         :rtype: List
         """
-        return [ StagedChangesCommitRequestDelegated ]
+        return [ ChangeStagingCodeRequestDelegated ]
 
     @classmethod
-    async def listen_StagedChangesCommitRequestDelegated(cls, event: StagedChangesCommitRequestDelegated) -> StagedChangesCommitRequested:
+    async def listen_ChangeStagingCodeRequestDelegated(cls, event: ChangeStagingCodeRequestDelegated) -> ChangeStagingCodeRequested:
         """
-        Gets notified of a StagedChangesCommitRequestDelegated event.
-        Emits a StagedChangesCommitRequested event.
+        Gets notified of a ChangeStagingCodeRequestDelegated event.
+        Emits a ChangeStagingCodeRequested event.
         :param event: The event.
-        :type event: pythoneda.realm.rydnr.events.staged_changes_commit_request_delegated.StagedChangesCommitRequestDelegated
-        :return: A request to commit staged changes.
-        :rtype: pythoneda.shared.artifact_changes.events.staged_changes_commit_requested.StagedChangesCommitRequested
+        :type event: pythoneda.realm.rydnr.events.change_staging_code_request_delegated.ChangeStagingCodeRequestDelegated
+        :return: A request to stage changes.
+        :rtype: pythoneda.shared.artifact_changes.events.change_staging_code_requested.ChangeStagingCodeRequested
         """
+        print(f'received ChangeStagingCodeRequestDelegated')
         event_emitter = Ports.instance().resolve(EventEmitter)
         repository_url = GitRepo.remote_urls(event.repository_folder)['origin'][0]
         branch = GitRepo.current_branch(event.repository_folder)
-        result = StagedChangesCommitRequested(repository_url, branch, event.id)
+        # retrieve changes from the cloned repository.
+        change = Change.from_unidiff_text(GitDiff(event.repository_folder).diff(), repository_url, branch, event.repository_folder)
+        result = ChangeStagingCodeRequested(change, event.id)
+        print(f'Emitting {result}')
         await event_emitter.emit(result)
         return result
