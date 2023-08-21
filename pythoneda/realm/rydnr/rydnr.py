@@ -59,7 +59,7 @@ class Rydnr(EventListener):
 
         return cls._singleton
 
-    @event_listener(ChangeStagingCodeRequestDelegated)
+    @listen(ChangeStagingCodeRequestDelegated)
     @classmethod
     async def listen_ChangeStagingCodeRequestDelegated(cls, event: ChangeStagingCodeRequestDelegated) -> ChangeStagingCodeRequested:
         """
