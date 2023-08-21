@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import logging
-from pythoneda import attribute, sensitive, Event, EventEmitter, EventListener, Ports
+from pythoneda import attribute, listen, sensitive, Event, EventEmitter, EventListener, Ports
 from pythoneda.realm.rydnr.events import ChangeStagingCodeRequestDelegated
 from pythoneda.shared.artifact_changes import Change
 from pythoneda.shared.artifact_changes.events import ChangeStagingCodeRequested
@@ -59,15 +59,7 @@ class Rydnr(EventListener):
 
         return cls._singleton
 
-    @classmethod
-    def supported_events(cls) -> List[Type[Event]]:
-        """
-        Retrieves the list of supported event classes.
-        :return: Such list.
-        :rtype: List
-        """
-        return [ ChangeStagingCodeRequestDelegated ]
-
+    @event_listener(ChangeStagingCodeRequestDelegated)
     @classmethod
     async def listen_ChangeStagingCodeRequestDelegated(cls, event: ChangeStagingCodeRequestDelegated) -> ChangeStagingCodeRequested:
         """
