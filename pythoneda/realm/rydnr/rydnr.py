@@ -18,7 +18,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-import logging
 from pythoneda import attribute, listen, sensitive, Event, EventEmitter, EventListener, Ports
 from pythoneda.realm.rydnr.events import ChangeStagingCodeRequestDelegated
 from pythoneda.shared.artifact_changes import Change
@@ -59,8 +58,8 @@ class Rydnr(EventListener):
 
         return cls._singleton
 
-    @listen(ChangeStagingCodeRequestDelegated)
     @classmethod
+    @listen(ChangeStagingCodeRequestDelegated)
     async def listen_ChangeStagingCodeRequestDelegated(cls, event: ChangeStagingCodeRequestDelegated) -> ChangeStagingCodeRequested:
         """
         Gets notified of a ChangeStagingCodeRequestDelegated event.
@@ -70,13 +69,13 @@ class Rydnr(EventListener):
         :return: A request to stage changes.
         :rtype: pythoneda.shared.artifact_changes.events.change_staging_code_requested.ChangeStagingCodeRequested
         """
-        print(f'received ChangeStagingCodeRequestDelegated')
+        Rydnr.logger().debug(f"Received {event}")
         event_emitter = Ports.instance().resolve(EventEmitter)
         repository_url = GitRepo.remote_urls(event.repository_folder)['origin'][0]
         branch = GitRepo.current_branch(event.repository_folder)
         # retrieve changes from the cloned repository.
         change = Change.from_unidiff_text(GitDiff(event.repository_folder).diff(), repository_url, branch, event.repository_folder)
         result = ChangeStagingCodeRequested(change, event.id)
-        print(f'Emitting {result}')
+        Rydnr.logger().info(f"Emitting {result}")
         await event_emitter.emit(result)
         return result
