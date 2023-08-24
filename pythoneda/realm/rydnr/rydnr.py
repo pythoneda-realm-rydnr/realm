@@ -1,5 +1,5 @@
 """
-pythoneda/realm/rydnr/domain/rydnr.py
+pythoneda/realm/rydnr/rydnr.py
 
 This file declares the Rydnr class.
 
@@ -51,7 +51,7 @@ class Rydnr(EventListener):
         """
         Retrieves the singleton instance.
         :return: Such instance.
-        :rtype: pythoneda.realm.rydnr.domain.rydnr.Rydnr
+        :rtype: pythoneda.realm.rydnr.Rydnr
         """
         if cls._singleton is None:
             cls._singleton = cls.initialize()
@@ -65,9 +65,9 @@ class Rydnr(EventListener):
         Gets notified of a ChangeStagingCodeRequestDelegated event.
         Emits a ChangeStagingCodeRequested event.
         :param event: The event.
-        :type event: pythoneda.realm.rydnr.events.change_staging_code_request_delegated.ChangeStagingCodeRequestDelegated
+        :type event: pythoneda.realm.rydnr.events.ChangeStagingCodeRequestDelegated
         :return: A request to stage changes.
-        :rtype: pythoneda.shared.artifact_changes.events.change_staging_code_requested.ChangeStagingCodeRequested
+        :rtype: pythoneda.shared.artifact_changes.events.ChangeStagingCodeRequested
         """
         Rydnr.logger().debug(f"Received {event}")
         event_emitter = Ports.instance().resolve(EventEmitter)
