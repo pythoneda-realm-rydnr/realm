@@ -22,6 +22,7 @@ from pythoneda import attribute, listen, sensitive, Event, EventEmitter, EventLi
 from pythoneda.realm.rydnr.events import ChangeStagingCodeRequestDelegated
 from pythoneda.shared.artifact_changes import Change
 from pythoneda.shared.artifact_changes.events import ChangeStagingCodeRequested
+from pythoneda.shared.artifact_changes.events import ChangeStagingCodeDescribed
 from pythoneda.shared.git import GitDiff, GitRepo
 from typing import List, Type
 
@@ -69,13 +70,24 @@ class Rydnr(EventListener):
         :return: A request to stage changes.
         :rtype: pythoneda.shared.artifact_changes.events.ChangeStagingCodeRequested
         """
-        Rydnr.logger().debug(f"Received {event}")
+        Rydnr.logger().info(f"Received {type(event)}")
         event_emitter = Ports.instance().resolve(EventEmitter)
         repository_url = GitRepo.remote_urls(event.repository_folder)['origin'][0]
         branch = GitRepo.current_branch(event.repository_folder)
         # retrieve changes from the cloned repository.
         change = Change.from_unidiff_text(GitDiff(event.repository_folder).diff(), repository_url, branch, event.repository_folder)
         result = ChangeStagingCodeRequested(change, event.id)
-        Rydnr.logger().info(f"Emitting {result}")
+        Rydnr.logger().info(f"Emitting {type(result)}")
         await event_emitter.emit(result)
         return result
+
+    @classmethod
+    @listen(ChangeStagingCodeDescribed)
+    async def listen_ChangeStagingCodeDescribed(cls, event: ChangeStagingCodeDescribed):
+        """
+        Gets notified of a ChangeStagingCodeDescribed event.
+        :param event: The event.
+        :type event: pythoneda.shared.artifact_changes.events.ChangeStagingCodeDescribed
+        """
+        Rydnr.logger().debug(f"!!!!!! Received {type(event)}")
+        await event.code_request.run()
