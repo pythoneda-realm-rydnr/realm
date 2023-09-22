@@ -21,7 +21,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from pythoneda import attribute, listen, sensitive, Event, EventEmitter, EventListener, Ports
 from pythoneda.realm.rydnr.events import ChangeStagingCodeRequestDelegated
 from pythoneda.shared.artifact_changes import Change
-from pythoneda.shared.artifact_changes.events import ChangeStagingCodePackaged, ChangeStagingCodeRequested
+from pythoneda.shared.artifact_changes.events import ChangeStagingCodeExecutionRequested, ChangeStagingCodePackaged, ChangeStagingCodeRequested
+from pythoneda.shared.code_requests import CodeExecutionRequest
 from pythoneda.shared.git import GitDiff, GitRepo
 from typing import List, Type
 
@@ -88,5 +89,27 @@ class Rydnr(EventListener):
         :type event: pythoneda.shared.artifact_changes.events.ChangeStagingCodePackaged
         """
         Rydnr.logger().debug(f"Received {type(event)}")
+        # TODO: Implement a way to choose whether the code should be reviewed or executed
+        await cls.request_execution(event)
+
+    @classmethod
+    async def request_execution(cls, event: ChangeStagingCodePackaged):
+        """
+        Requests the automated execution of the code upon receiving a ChangeStagingCodePackaged.
+        :param event: The event.
+        :type event: pythoneda.shared.artifact_changes.events.ChangeStagingCodePackaged
+        """
+        result = ChangeStagingCodeExecutionRequested(CodeExecutionRequest(event.nix_flake.code_request), event.id)
+        Rydnr.logger().debug(f"Emitting {type(result)}")
+        await Ports.instance().resolve(EventEmitter).emit(result)
+        return result
+
+    @classmethod
+    async def launch_Jupyter(cls, event: ChangeStagingCodePackaged):
+        """
+        Launches Jupyterlab upon receiving a ChangeStagingCodePackaged.
+        :param event: The event.
+        :type event: pythoneda.shared.artifact_changes.events.ChangeStagingCodePackaged
+        """
         Rydnr.logger().info(f"Running {type(event)}")
         await event.nix_flake.run()
