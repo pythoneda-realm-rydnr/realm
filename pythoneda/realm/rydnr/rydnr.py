@@ -21,10 +21,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from pythoneda import attribute, listen, sensitive, Event, EventEmitter, EventListener, Ports
 from pythoneda.realm.rydnr.events import ChangeStagingCodeRequestDelegated
 from pythoneda.shared.artifact_changes import Change
-from pythoneda.shared.artifact_changes.events import ChangeStagingCodeExecutionRequested, ChangeStagingCodePackaged, ChangeStagingCodeRequested
+from pythoneda.shared.artifact_changes.events import (
+    ChangeStagingCodeExecutionRequested, ChangeStagingCodePackaged, ChangeStagingCodeRequested
+)
 from pythoneda.shared.code_requests import CodeExecutionRequest
 from pythoneda.shared.git import GitDiff, GitRepo
-from typing import List, Type
+
 
 class Rydnr(EventListener):
     """
